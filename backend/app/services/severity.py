@@ -40,6 +40,8 @@ PROMPT = (
 def heuristic_severity(issue_type: str | None, confidence: float | None) -> float | None:
     if issue_type is None:
         return None
+    if issue_type == "no_issue":
+        return 0.0
     base = BASE_SEVERITY.get(issue_type, 0.5)
     conf = confidence if confidence is not None else 0.5
     # Low-confidence predictions are pulled toward the middle of the scale.
@@ -83,6 +85,8 @@ async def llm_severity(img_bytes: bytes, mime: str = "image/jpeg") -> float | No
 async def score_severity(
     img_bytes: bytes, issue_type: str | None, confidence: float | None
 ) -> tuple[float | None, str]:
+    if issue_type == "no_issue":
+        return 0.0, "heuristic"
     v = await llm_severity(img_bytes)
     if v is not None:
         return v, "llm"

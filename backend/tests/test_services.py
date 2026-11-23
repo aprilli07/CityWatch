@@ -6,7 +6,14 @@ import pytest
 
 from app.services.severity import heuristic_severity, parse_llm_severity
 from app.services.weather import count_freeze_thaw, parse_response
-from ml.cv.preprocess import IMG_SIZE, ImageRejected, average_hash, is_near_duplicate, load_and_prepare
+from ml.cv.preprocess import (
+    IMG_SIZE,
+    ImageRejected,
+    average_hash,
+    is_near_duplicate,
+    load_and_prepare,
+    variant_hashes,
+)
 
 
 def test_freeze_thaw_count():
@@ -86,3 +93,15 @@ def test_near_duplicate_detection():
     kept = np.array([average_hash(img)], dtype=np.uint64)
     assert is_near_duplicate(average_hash(copy), kept)
     assert not is_near_duplicate(average_hash(_scene(2)), kept)
+
+
+def test_no_issue_has_zero_severity():
+    assert heuristic_severity("no_issue", 0.99) == 0.0
+
+
+def test_flipped_copy_is_duplicate():
+    img = _scene(3)
+    kept = np.array([average_hash(img)], dtype=np.uint64)
+    mirrored = np.ascontiguousarray(img[:, ::-1])
+    assert not is_near_duplicate(average_hash(mirrored), kept)  # plain hash misses it
+    assert any(is_near_duplicate(v, kept) for v in variant_hashes(mirrored))

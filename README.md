@@ -15,9 +15,10 @@ reproducible system.
 | Feature pipeline | **0.39 s** per snapshot for 10.8K assets, **45× faster** than the original per-asset buffer scan (which computed only 4 features) | `scripts/bench_features.py` |
 | Live rescoring | All 10,828 assets and 100 regions rescored in **~2–3 s** after each report | API logs |
 | End-to-end report | Upload, weather, asset match and DB write in **~1.2 s** (CV model excluded) | local run |
-| Image classifier | 10 classes. Accuracy is reported in `cv_metrics.json` after `make train-cv` | held-out, de-duplicated test split |
+| Image classifier | **89.8%** accuracy, **97.8%** top-2, macro-F1 **0.875** across 10 issue classes + `no_issue` (fine-tuned ImageNet MobileNetV2) | 2,798 held-out test images after near-duplicate removal (aHash, all flips/rotations) |
+| Dataset cleaning | 48K raw photos from 3 Kaggle datasets; **58%** were augmented near-duplicates that would have leaked between train and test. 18.7K kept (largest classes capped at 3,000) | `ml/artifacts/cv_dataset.json` |
 
-Risk results come from **simulated** failure history (see [Data](#data)).
+Risk results come from **simulated** failure history (see [Data](#data)). Weakest CV classes: `damaged_roads` (F1 0.76, confused with potholes), `no_issue` (0.70), `illegal_parking` (0.77, only 7 test images); full report and confusion matrix in [`cv_metrics.json`](backend/ml/artifacts/cv_metrics.json) / [`cv_confusion_matrix.png`](backend/ml/artifacts/cv_confusion_matrix.png).
 <!-- METRICS:END -->
 
 ## How it works
@@ -25,7 +26,7 @@ Risk results come from **simulated** failure history (see [Data](#data)).
 ```mermaid
 flowchart LR
     A[Expo app<br/>photo + GPS] -->|multipart| B[FastAPI]
-    B --> C[OpenCV preprocess<br/>+ MobileNetV2<br/>10 classes]
+    B --> C[OpenCV preprocess<br/>+ MobileNetV2<br/>10 issue classes]
     B --> D[Open-Meteo<br/>weather at report time]
     B --> E[(Postgres + PostGIS)]
     E -->|KNN within 25 m| F[nearest road / sign]
@@ -58,7 +59,7 @@ flowchart LR
 | 3,776 road segments, 7,052 signs/crossings/signals | OpenStreetMap (Waterloo, ON) | Real |
 | Daily weather 2019 to present | Open-Meteo archive | Real |
 | ~11K incidents + ~24K citizen reports (2020 to present) | `ml/risk/simulate.py` | **Simulated** (`is_simulated = true`) |
-| Labelled photos, 10 classes | Kaggle Urban Issues Dataset | Real |
+| Labelled photos, 10 issue classes + no-issue | Kaggle Urban Issues Dataset + two pothole/road-issue datasets | Real |
 
 No public per-asset failure history exists for Waterloo, so failures are
 **simulated** with a daily hazard process. Its inputs are real asset attributes
@@ -146,7 +147,7 @@ docs/PRODUCT.md   problem, users, scope, metrics, decisions, roadmap
 ## Tests
 
 ```bash
-make test     # 23 tests: features (incl. leakage), services, API against PostGIS
+make test     # 25 tests: features (incl. leakage), services, API against PostGIS
 make lint     # ruff + tsc + expo lint
 ```
 

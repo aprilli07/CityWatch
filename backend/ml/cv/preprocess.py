@@ -68,3 +68,14 @@ def is_near_duplicate(h: int, kept: "np.ndarray", max_bits: int = NEAR_DUP_BITS)
     if kept.size == 0:
         return False
     return bool((np.bitwise_count(kept ^ np.uint64(h)) <= max_bits).any())
+
+
+def variant_hashes(img: np.ndarray) -> list[int]:
+    """aHashes of the 8 flip/rotation variants, so augmented copies that were mirrored or
+    rotated by 90 degrees are still recognised as duplicates."""
+    out = []
+    for k in range(4):
+        r = np.rot90(img, k)
+        out.append(average_hash(np.ascontiguousarray(r)))
+        out.append(average_hash(np.ascontiguousarray(r[:, ::-1])))
+    return out

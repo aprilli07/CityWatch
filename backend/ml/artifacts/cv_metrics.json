@@ -1,0 +1,240 @@
+{
+  "classes": [
+    "broken_road_signs",
+    "damaged_concrete",
+    "damaged_electric_poles",
+    "damaged_roads",
+    "dead_animals",
+    "fallen_trees",
+    "garbage",
+    "graffiti",
+    "illegal_parking",
+    "no_issue",
+    "potholes"
+  ],
+  "test_images": 2798,
+  "test_accuracy": 0.8977841315225161,
+  "test_top2_accuracy": 0.9778413152251608,
+  "test_macro_f1": 0.8745792080365195,
+  "val_accuracy_head_only": 0.8591322898864746,
+  "val_accuracy_after_finetune": 0.9030530452728271,
+  "per_class": {
+    "broken_road_signs": {
+      "precision": 0.9704,
+      "recall": 0.9776,
+      "f1-score": 0.974,
+      "support": 134.0
+    },
+    "damaged_concrete": {
+      "precision": 0.9556,
+      "recall": 0.9089,
+      "f1-score": 0.9317,
+      "support": 450.0
+    },
+    "damaged_electric_poles": {
+      "precision": 0.9512,
+      "recall": 0.8909,
+      "f1-score": 0.9201,
+      "support": 394.0
+    },
+    "damaged_roads": {
+      "precision": 0.6991,
+      "recall": 0.8404,
+      "f1-score": 0.7633,
+      "support": 188.0
+    },
+    "dead_animals": {
+      "precision": 1.0,
+      "recall": 0.9375,
+      "f1-score": 0.9677,
+      "support": 16.0
+    },
+    "fallen_trees": {
+      "precision": 0.9425,
+      "recall": 0.9467,
+      "f1-score": 0.9446,
+      "support": 450.0
+    },
+    "garbage": {
+      "precision": 0.8957,
+      "recall": 0.9356,
+      "f1-score": 0.9152,
+      "support": 450.0
+    },
+    "graffiti": {
+      "precision": 0.8719,
+      "recall": 0.942,
+      "f1-score": 0.9056,
+      "support": 224.0
+    },
+    "illegal_parking": {
+      "precision": 0.8333,
+      "recall": 0.7143,
+      "f1-score": 0.7692,
+      "support": 7.0
+    },
+    "no_issue": {
+      "precision": 0.5882,
+      "recall": 0.8571,
+      "f1-score": 0.6977,
+      "support": 35.0
+    },
+    "potholes": {
+      "precision": 0.8787,
+      "recall": 0.7889,
+      "f1-score": 0.8314,
+      "support": 450.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      131,
+      3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      409,
+      1,
+      2,
+      0,
+      0,
+      8,
+      11,
+      0,
+      1,
+      18
+    ],
+    [
+      2,
+      3,
+      351,
+      0,
+      0,
+      17,
+      8,
+      5,
+      0,
+      5,
+      3
+    ],
+    [
+      0,
+      1,
+      1,
+      158,
+      0,
+      0,
+      1,
+      1,
+      0,
+      4,
+      22
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      15,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      10,
+      1,
+      0,
+      426,
+      3,
+      3,
+      0,
+      4,
+      2
+    ],
+    [
+      0,
+      2,
+      6,
+      1,
+      0,
+      4,
+      421,
+      10,
+      0,
+      5,
+      1
+    ],
+    [
+      2,
+      3,
+      0,
+      0,
+      0,
+      2,
+      4,
+      211,
+      1,
+      0,
+      1
+    ],
+    [
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      2,
+      0,
+      0,
+      30,
+      2
+    ],
+    [
+      0,
+      5,
+      0,
+      63,
+      0,
+      2,
+      23,
+      1,
+      0,
+      1,
+      355
+    ]
+  ],
+  "train_seconds": 4022.4,
+  "epochs": {
+    "head": 6,
+    "finetune": 10
+  },
+  "unfreeze_from_layer": 100
+}

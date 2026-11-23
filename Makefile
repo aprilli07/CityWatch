@@ -21,7 +21,9 @@ train-risk:       ## train 30/90/365-day risk models (writes ml/artifacts/risk_m
 
 train-cv:         ## download dataset, prepare with OpenCV, fine-tune MobileNetV2
 	$(B) .venv/bin/kaggle datasets download -d akinduhiman/urban-issues-dataset -p ml/data/raw --unzip
-	$(B) .venv/bin/python -m ml.cv.prepare_dataset ml/data/raw
+	$(B) .venv/bin/kaggle datasets download -d atulyakumar98/pothole-detection-dataset -p ml/data/raw2 --unzip
+	$(B) .venv/bin/kaggle datasets download -d programmerrdai/road-issues-detection-dataset -p ml/data/raw3 --unzip
+	$(B) .venv/bin/python -m ml.cv.prepare_dataset ml/data/raw ml/data/raw2 ml/data/raw3
 	$(B) .venv/bin/python -m ml.cv.train
 
 score:            ## score all assets/regions with the trained risk model

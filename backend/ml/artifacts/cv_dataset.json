@@ -1,0 +1,101 @@
+{
+  "raw": {
+    "broken_road_signs": 4088,
+    "damaged_concrete": 11170,
+    "damaged_electric_poles": 7583,
+    "damaged_roads": 2470,
+    "dead_animals": 192,
+    "fallen_trees": 5269,
+    "garbage": 4582,
+    "graffiti": 4048,
+    "illegal_parking": 171,
+    "no_issue": 352,
+    "potholes": 8017
+  },
+  "rejected": {
+    "broken_road_signs": 995,
+    "damaged_concrete": 200,
+    "damaged_electric_poles": 1,
+    "dead_animals": 8,
+    "fallen_trees": 1,
+    "garbage": 68,
+    "graffiti": 6,
+    "illegal_parking": 2,
+    "no_issue": 1,
+    "potholes": 12
+  },
+  "duplicates": {
+    "broken_road_signs": 2200,
+    "damaged_concrete": 7969,
+    "damaged_electric_poles": 4960,
+    "damaged_roads": 1215,
+    "dead_animals": 77,
+    "fallen_trees": 2267,
+    "garbage": 1513,
+    "graffiti": 2545,
+    "illegal_parking": 122,
+    "no_issue": 115,
+    "potholes": 5004
+  },
+  "kept": {
+    "broken_road_signs": {
+      "train": 670,
+      "val": 89,
+      "test": 134
+    },
+    "damaged_concrete": {
+      "train": 2250,
+      "val": 300,
+      "test": 450
+    },
+    "damaged_electric_poles": {
+      "train": 1966,
+      "val": 262,
+      "test": 394
+    },
+    "damaged_roads": {
+      "train": 941,
+      "val": 126,
+      "test": 188
+    },
+    "dead_animals": {
+      "train": 80,
+      "val": 11,
+      "test": 16
+    },
+    "fallen_trees": {
+      "train": 2250,
+      "val": 300,
+      "test": 450
+    },
+    "garbage": {
+      "train": 2250,
+      "val": 300,
+      "test": 450
+    },
+    "graffiti": {
+      "train": 1123,
+      "val": 150,
+      "test": 224
+    },
+    "illegal_parking": {
+      "train": 35,
+      "val": 5,
+      "test": 7
+    },
+    "no_issue": {
+      "train": 177,
+      "val": 24,
+      "test": 35
+    },
+    "potholes": {
+      "train": 2250,
+      "val": 300,
+      "test": 450
+    }
+  },
+  "skipped": {
+    "unlabelled_or_mixed": 937,
+    "foreign_label": 338
+  }
+}

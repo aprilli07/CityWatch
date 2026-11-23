@@ -1,0 +1,15 @@
+{
+  "classes": [
+    "broken_road_signs",
+    "damaged_concrete",
+    "damaged_electric_poles",
+    "damaged_roads",
+    "dead_animals",
+    "fallen_trees",
+    "garbage",
+    "graffiti",
+    "illegal_parking",
+    "no_issue",
+    "potholes"
+  ]
+}
