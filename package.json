@@ -1,13 +1,11 @@
 {
-  "name": "hackcaninfra",
+  "name": "citywatch",
   "private": true,
   "scripts": {
     "start": "npm --prefix frontend start",
     "ios": "npm --prefix frontend run ios",
     "android": "npm --prefix frontend run android",
-    "web": "npm --prefix frontend run web",
     "lint": "npm --prefix frontend run lint",
-    "backend:start": "node backend/server.js",
-    "backend:dev": "node backend/server.js"
+    "api": "cd backend && .venv/bin/uvicorn app.main:app --reload --port 8000"
   }
 }

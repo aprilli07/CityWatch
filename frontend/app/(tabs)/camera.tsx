@@ -1,4 +1,4 @@
-import { getHeatmap, getStats, HeatmapCell, HeatmapPeriod, StatsData } from '@/lib/api';
+import { getHeatmap, getRegionsGeoJSON, getStats, HeatmapCell, HeatmapPeriod, StatsData } from '@/lib/api';
 import MapboxGL from '@rnmapbox/maps';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -14,7 +14,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-MapboxGL.setAccessToken(process.env.MAPBOX_API_KEY!);
+const MAPBOX_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN ?? '';
+MapboxGL.setAccessToken(MAPBOX_TOKEN);
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
@@ -51,6 +52,16 @@ const heatmapLayerStyle: any = {
   ],
 };
 
+// H3 region hexagons, coloured by relative risk for the selected horizon
+const hexFillStyle: any = {
+  fillColor: [
+    'interpolate', ['linear'], ['get', 'value'],
+    0, '#1e3a8a', 0.25, '#0ea5e9', 0.5, '#facc15', 0.75, '#f97316', 1, '#ef4444',
+  ],
+  fillOpacity: 0.45,
+};
+const hexLineStyle: any = { lineColor: '#ffffff', lineOpacity: 0.15, lineWidth: 0.5 };
+
 const markerCircleStyle: any = {
   circleRadius:      10,
   circleColor:       '#ef4444',
@@ -68,7 +79,6 @@ function priorityForValue(value: number): { label: string; color: string; bg: st
   return                    { label: 'low',       color: '#00d4a8', bg: '#00d4a820' };
 }
 
-const MAPBOX_TOKEN = process.env.MAPBOX_API_KEY!;
 
 async function reverseGeocode(lon: number, lat: number): Promise<string> {
   try {
@@ -93,6 +103,7 @@ export default function HeatmapScreen() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [zoneNames, setZoneNames] = useState<string[]>([]);
+  const [regionsGeo, setRegionsGeo] = useState<GeoJSON.FeatureCollection | null>(null);
 
   // Fetch heatmap whenever period changes
   useEffect(() => {
@@ -101,6 +112,17 @@ export default function HeatmapScreen() {
       .then(setHeatmapCells)
       .catch(err => console.error('Heatmap fetch failed:', err))
       .finally(() => setLoading(false));
+  }, [period]);
+
+  // Forecast periods are drawn as H3 hexagons rather than a blurred heatmap
+  useEffect(() => {
+    if (period === 'current') {
+      setRegionsGeo(null);
+      return;
+    }
+    getRegionsGeoJSON(period)
+      .then(setRegionsGeo)
+      .catch(err => console.error('Regions fetch failed:', err));
   }, [period]);
 
   // Fetch stats once on mount
@@ -169,7 +191,7 @@ export default function HeatmapScreen() {
     {
       icon: '📍',
       value: stats ? String(heatmapCells.length) : '—',
-      label: 'Risk Grid Cells',
+      label: 'Regions Monitored',
     },
     {
       icon: '📈',
@@ -218,8 +240,16 @@ export default function HeatmapScreen() {
       <MapboxGL.MapView style={styles.map} styleURL={MapboxGL.StyleURL.Dark}>
         <MapboxGL.Camera zoomLevel={13} centerCoordinate={centerCoord} />
 
-        {/* Heatmap layer */}
-        {heatmapCells.length > 0 && (
+        {/* Forecast: H3 region choropleth */}
+        {regionsGeo && (
+          <MapboxGL.ShapeSource id="regions-source" shape={regionsGeo}>
+            <MapboxGL.FillLayer id="regions-fill" sourceID="regions-source" style={hexFillStyle} />
+            <MapboxGL.LineLayer id="regions-line" sourceID="regions-source" style={hexLineStyle} />
+          </MapboxGL.ShapeSource>
+        )}
+
+        {/* Current: severity heatmap */}
+        {period === 'current' && heatmapCells.length > 0 && (
           <MapboxGL.ShapeSource id="heatmap-source" shape={heatmapGeoJSON}>
             <MapboxGL.HeatmapLayer id="heatmap-layer" sourceID="heatmap-source" style={heatmapLayerStyle} />
           </MapboxGL.ShapeSource>
@@ -295,7 +325,7 @@ export default function HeatmapScreen() {
             {topZones.map((z, i) => {
               const p = priorityForValue(z.value);
               return (
-                <View key={`${z.latitude}-${z.longitude}`} style={styles.zoneRow}>
+                <View key={z.h3_cell} style={styles.zoneRow}>
                   <View style={styles.zoneRank}>
                     <Text style={styles.zoneRankText}>{i + 1}</Text>
                   </View>
@@ -304,10 +334,13 @@ export default function HeatmapScreen() {
                       {zoneNames[i] ?? `${z.latitude.toFixed(4)}, ${z.longitude.toFixed(4)}`}
                     </Text>
                       <Text style={styles.zoneMeta}>
-                        {z.issue_count} issue{z.issue_count !== 1 ? 's' : ''} · risk {(z.value * 100).toFixed(0)}%
+                        {z.issue_count} open issue{z.issue_count !== 1 ? 's' : ''} ·{' '}
+                        {period === 'current'
+                          ? `avg severity ${(z.risk * 100).toFixed(0)}%`
+                          : `${(z.risk * 100).toFixed(1)}% avg failure probability`}
                       </Text>
                       <Text style={[styles.zoneMeta, { marginTop: 2 }]}> 
-                        avg {(z.avg_severity * 100).toFixed(0)}% · 30d {(z.predict_30d * 100).toFixed(0)}% · 90d {(z.predict_90d * 100).toFixed(0)}% · 1y {(z.predict_365d * 100).toFixed(0)}%
+                        {z.asset_count} assets · 30d {(z.predict_30d * 100).toFixed(1)}% · 90d {(z.predict_90d * 100).toFixed(1)}% · 1y {(z.predict_365d * 100).toFixed(1)}%
                       </Text>
                   </View>
                   <View style={[styles.priorityBadge, { backgroundColor: p.bg }]}>

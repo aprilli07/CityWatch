@@ -1,0 +1,19 @@
+# Full local stack: PostGIS + API.  `docker compose up` then `make bootstrap`.
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: citywatch
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/citywatch
+    env_file: [./backend/.env]
+    ports: ["8000:8000"]
+    depends_on: [db]
+volumes:
+  pgdata:

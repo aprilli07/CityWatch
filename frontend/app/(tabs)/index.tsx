@@ -21,10 +21,10 @@ const APP_NAME = 'CityWatch';
 // ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS: Record<string, { label: string; color: string; bg: string }> = {
-  analyzing:  { label: 'AI Analyzing', color: '#00d4a8', bg: '#00d4a820' },
-  confirmed:  { label: 'Confirmed',    color: '#00d4a8', bg: '#00d4a820' },
-  dispatched: { label: 'Dispatched',   color: '#4ade80', bg: '#4ade8020' },
-  resolved:   { label: 'Resolved',     color: '#94a3b8', bg: '#94a3b820' },
+  open:        { label: 'Open',        color: '#00d4a8', bg: '#00d4a820' },
+  in_progress: { label: 'In Progress', color: '#4ade80', bg: '#4ade8020' },
+  resolved:    { label: 'Resolved',    color: '#94a3b8', bg: '#94a3b820' },
+  rejected:    { label: 'Not an issue', color: '#f87171', bg: '#f8717120' },
 };
 
 // ─── All Reports Modal ────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ function AllReportsModal({ visible, reports, onClose }: { visible: boolean; repo
           </View>
           <ScrollView showsVerticalScrollIndicator={false}>
             {reports.map((r) => {
-              const s = STATUS[r.status ?? 'confirmed'] ?? STATUS.confirmed;
+              const s = STATUS[r.status ?? 'open'] ?? STATUS.open;
               return (
                 <View key={r.id} style={allReports.row}>
                   <View style={allReports.icon} />
@@ -196,8 +196,15 @@ function ReportModal({ visible, mode, userId, onClose, onSubmitted }: { visible:
     }
     setLoading(true);
     try {
-      await submitPotholeReport(photo, location, photoTimestamp, userId);
-      Alert.alert('Report submitted successfully');
+      const result = await submitPotholeReport(photo, location, photoTimestamp, userId);
+      const { prediction, confidence } = result.classification;
+      Alert.alert(
+        'Report submitted',
+        prediction
+          ? `Detected: ${prediction.replace(/_/g, ' ')} (${Math.round((confidence ?? 0) * 100)}% confidence)` +
+            (result.report.severity != null ? `\nSeverity: ${Math.round(result.report.severity * 100)}%` : '')
+          : 'Thanks! A city reviewer will classify this report.',
+      );
       setPhoto(null);
       setLocation(null);
       onSubmitted();
@@ -381,7 +388,7 @@ export default function HomeScreen() {
           {recentThree.length === 0 ? (
             <Text style={styles.reportMeta}>No reports yet.</Text>
           ) : recentThree.map((r) => {
-            const s = STATUS[r.status ?? 'confirmed'] ?? STATUS.confirmed;
+            const s = STATUS[r.status ?? 'open'] ?? STATUS.open;
             return (
               <View key={r.id} style={styles.reportRow}>
                 <View style={styles.reportIcon} />

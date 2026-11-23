@@ -1,63 +1,35 @@
-import { FlatList, Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-//import { IconSymbol } from '@/components/ui/icon-symbol';
+import { getLeaderboard, LeaderboardEntry } from '@/lib/api';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, RefreshControl, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-// Type representing a user on the leaderboard.
-// This matches what we will eventually fetch from the API.
-type LeaderboardUser = {
-  id: string;
-  name: string;
-  avatar?: string;
-  reportCount: number;
-  rank: number;
-};
-
-// Mock data representing the top users.
-const MOCK_LEADERBOARD_DATA: LeaderboardUser[] = [
-  {
-    id: 'user_1',
-    name: 'Sarah Jenkins',
-    avatar: 'https://i.pravatar.cc/150?u=sarah',
-    reportCount: 42,
-    rank: 1,
-  },
-  {
-    id: 'user_2',
-    name: 'Michael Chen',
-    avatar: 'https://i.pravatar.cc/150?u=michael',
-    reportCount: 38,
-    rank: 2,
-  },
-  {
-    id: 'user_3',
-    name: 'Alex Rivera',
-    avatar: 'https://i.pravatar.cc/150?u=alex',
-    reportCount: 31,
-    rank: 3,
-  },
-  {
-    id: 'user_4',
-    name: 'Emily Davis',
-    avatar: 'https://i.pravatar.cc/150?u=emily',
-    reportCount: 27,
-    rank: 4,
-  },
-  {
-    id: 'user_5',
-    name: 'David Wilson',
-    reportCount: 15,
-    rank: 5,
-  },
-  {
-    id: 'user_6',
-    name: 'Jessica Taylor',
-    avatar: 'https://i.pravatar.cc/150?u=jess',
-    reportCount: 12,
-    rank: 6,
-  },
+type Window = 'all' | '30d' | '365d';
+const WINDOWS: { key: Window; label: string }[] = [
+  { key: '30d', label: '30 days' },
+  { key: '365d', label: '1 year' },
+  { key: 'all', label: 'All time' },
 ];
 
 export default function Leaderboard() {
-  const renderItem = ({ item }: { item: LeaderboardUser }) => {
+  const [window, setWindow] = useState<Window>('30d');
+  const [data, setData] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setData(await getLeaderboard(window));
+    } catch (e: any) {
+      setError(e?.message ?? 'Failed to load leaderboard');
+    } finally {
+      setLoading(false);
+    }
+  }, [window]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const renderItem = ({ item }: { item: LeaderboardEntry }) => {
     // Top 3 get special metallic colors
     let rankColor = '#888'; // Default rank color
     if (item.rank === 1) rankColor = '#FFD700'; // Gold
@@ -72,25 +44,20 @@ export default function Leaderboard() {
           </Text>
         </View>
 
-        {item.avatar ? (
-          <Image source={{ uri: item.avatar }} style={styles.avatar} />
-        ) : (
-          <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarInitials}>
-              {item.name.charAt(0).toUpperCase()}
-            </Text>
-          </View>
-        )}
+        <View style={styles.avatarPlaceholder}>
+          <Text style={styles.avatarInitials}>{item.name.charAt(0).toUpperCase()}</Text>
+        </View>
 
         <View style={styles.userInfo}>
           <Text style={styles.nameText} numberOfLines={1}>
             {item.name}
           </Text>
+          <Text style={styles.subText}>{item.resolved_count} resolved</Text>
         </View>
 
         <View style={styles.statContainer}>
           <View style={styles.statBadge}>
-            <Text style={styles.statNumber}>{item.reportCount}</Text>
+            <Text style={styles.statNumber}>{item.report_count}</Text>
             <Text style={styles.statLabel}>Reports</Text>
           </View>
         </View>
@@ -113,14 +80,34 @@ export default function Leaderboard() {
           </View>
         </View>
 
+        <View style={styles.windowRow}>
+          {WINDOWS.map(w => (
+            <TouchableOpacity
+              key={w.key}
+              onPress={() => setWindow(w.key)}
+              style={[styles.windowBtn, window === w.key && styles.windowBtnActive]}
+            >
+              <Text style={[styles.windowText, window === w.key && styles.windowTextActive]}>{w.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         <View style={styles.listWrapper}>
-          <FlatList
-            data={MOCK_LEADERBOARD_DATA}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-          />
+          {loading && data.length === 0 ? (
+            <ActivityIndicator style={{ marginTop: 40 }} color="#2DD4BF" />
+          ) : error ? (
+            <Text style={styles.emptyText}>{error}</Text>
+          ) : (
+            <FlatList
+              data={data}
+              keyExtractor={(item) => item.id}
+              renderItem={renderItem}
+              contentContainerStyle={styles.listContainer}
+              showsVerticalScrollIndicator={false}
+              refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor="#2DD4BF" />}
+              ListEmptyComponent={<Text style={styles.emptyText}>No reports yet. Be the first!</Text>}
+            />
+          )}
         </View>
       </View>
     </SafeAreaView>
@@ -128,6 +115,16 @@ export default function Leaderboard() {
 }
 
 const styles = StyleSheet.create({
+  windowRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, paddingTop: 16 },
+  windowBtn: {
+    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16,
+    borderWidth: 1, borderColor: '#27272a',
+  },
+  windowBtnActive: { backgroundColor: 'rgba(20, 184, 166, 0.15)', borderColor: '#2DD4BF' },
+  windowText: { color: '#a1a1aa', fontSize: 13, fontWeight: '600' },
+  windowTextActive: { color: '#2DD4BF' },
+  subText: { color: '#71717a', fontSize: 12, marginTop: 2 },
+  emptyText: { color: '#a1a1aa', textAlign: 'center', marginTop: 40 },
   safeArea: {
     flex: 1,
     backgroundColor: '#09090b', // Base dark background

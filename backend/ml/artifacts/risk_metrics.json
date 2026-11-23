@@ -1,0 +1,303 @@
+{
+  "version": "rf-202611230401",
+  "n_features": 104,
+  "n_assets": 10828,
+  "n_incidents": 10838,
+  "n_reports": 22764,
+  "n_regions": 100,
+  "snapshots": {
+    "first": "2021-01-01",
+    "last": "2025-11-01",
+    "count": 59,
+    "test_start": "2024-12-01"
+  },
+  "timing_s": {
+    "load": 1.63,
+    "features_total": 22.59,
+    "features_per_snapshot": 0.383
+  },
+  "horizons": {
+    "fail_in_30d": {
+      "train_rows": 508916,
+      "train_snapshots": 47,
+      "test_rows": 129936,
+      "test_positive_rate": 0.012352234946435168,
+      "model": {
+        "roc_auc": 0.7587628623227062,
+        "pr_auc": 0.07678224008432516,
+        "brier": 0.011815232035123104,
+        "precision_at_top5pct": 0.07266009852216748,
+        "recall_at_top5pct": 0.2940809968847352,
+        "precision_at_top10pct": 0.053644269991533905,
+        "recall_at_top10pct": 0.4342679127725857
+      },
+      "baseline_legacy_features": {
+        "roc_auc": 0.7523014752713917,
+        "pr_auc": 0.07228204021305214,
+        "brier": 0.011857515306778584,
+        "precision_at_top5pct": 0.07127463054187193,
+        "recall_at_top5pct": 0.2884735202492212,
+        "precision_at_top10pct": 0.05071961825598399,
+        "recall_at_top10pct": 0.4105919003115265
+      },
+      "baseline_own_history": {
+        "roc_auc": 0.6436122724988979,
+        "pr_auc": 0.05061001646733618,
+        "precision_at_top5pct": 0.05187807881773399,
+        "recall_at_top5pct": 0.20996884735202492,
+        "precision_at_top10pct": 0.03802047256214885,
+        "recall_at_top10pct": 0.30778816199376946
+      },
+      "top_features": [
+        {
+          "feature": "log_length",
+          "importance": 0.0584
+        },
+        {
+          "feature": "length_m",
+          "importance": 0.0514
+        },
+        {
+          "feature": "own_inc_total",
+          "importance": 0.0439
+        },
+        {
+          "feature": "own_inc_730d",
+          "importance": 0.0384
+        },
+        {
+          "feature": "own_days_since_inc",
+          "importance": 0.0285
+        },
+        {
+          "feature": "own_inc_365d",
+          "importance": 0.0256
+        },
+        {
+          "feature": "region_inc_per_asset_365d",
+          "importance": 0.0218
+        },
+        {
+          "feature": "y_km",
+          "importance": 0.0185
+        },
+        {
+          "feature": "ft90_x_own365",
+          "importance": 0.0183
+        },
+        {
+          "feature": "own_inc_180d",
+          "importance": 0.0177
+        },
+        {
+          "feature": "days_since_rep_100m",
+          "importance": 0.0175
+        },
+        {
+          "feature": "x_km",
+          "importance": 0.0172
+        },
+        {
+          "feature": "dist_centre_km",
+          "importance": 0.0172
+        },
+        {
+          "feature": "nbr_sev_500m_90d",
+          "importance": 0.0171
+        },
+        {
+          "feature": "nbr_inc_500m_365d",
+          "importance": 0.017
+        }
+      ]
+    },
+    "fail_in_90d": {
+      "train_rows": 487260,
+      "train_snapshots": 45,
+      "test_rows": 129936,
+      "test_positive_rate": 0.0344169437261421,
+      "model": {
+        "roc_auc": 0.753795398065565,
+        "pr_auc": 0.1570755414373689,
+        "brier": 0.031220623235428128,
+        "precision_at_top5pct": 0.18411330049261085,
+        "recall_at_top5pct": 0.26744186046511625,
+        "precision_at_top10pct": 0.1369968444547064,
+        "recall_at_top10pct": 0.39803220035778175
+      },
+      "baseline_legacy_features": {
+        "roc_auc": 0.7429904176020615,
+        "pr_auc": 0.14538939634284834,
+        "brier": 0.03147261420701851,
+        "precision_at_top5pct": 0.17395320197044334,
+        "recall_at_top5pct": 0.25268336314847945,
+        "precision_at_top10pct": 0.1280689602093435,
+        "recall_at_top10pct": 0.37209302325581395
+      },
+      "baseline_own_history": {
+        "roc_auc": 0.6292087875352309,
+        "pr_auc": 0.102014455567562,
+        "precision_at_top5pct": 0.12854064039408866,
+        "recall_at_top5pct": 0.18671735241502682,
+        "precision_at_top10pct": 0.09759101054413916,
+        "recall_at_top10pct": 0.28354203935599287
+      },
+      "top_features": [
+        {
+          "feature": "log_length",
+          "importance": 0.0775
+        },
+        {
+          "feature": "length_m",
+          "importance": 0.072
+        },
+        {
+          "feature": "own_inc_total",
+          "importance": 0.0562
+        },
+        {
+          "feature": "own_inc_730d",
+          "importance": 0.0426
+        },
+        {
+          "feature": "is_road",
+          "importance": 0.0347
+        },
+        {
+          "feature": "own_days_since_inc",
+          "importance": 0.0264
+        },
+        {
+          "feature": "own_inc_365d",
+          "importance": 0.0248
+        },
+        {
+          "feature": "region_inc_per_asset_365d",
+          "importance": 0.0212
+        },
+        {
+          "feature": "own_sev_mean_365d",
+          "importance": 0.0179
+        },
+        {
+          "feature": "nbr_inc_500m_365d",
+          "importance": 0.0175
+        },
+        {
+          "feature": "ft90_x_own365",
+          "importance": 0.0173
+        },
+        {
+          "feature": "x_km",
+          "importance": 0.0168
+        },
+        {
+          "feature": "y_km",
+          "importance": 0.0166
+        },
+        {
+          "feature": "dist_centre_km",
+          "importance": 0.0163
+        },
+        {
+          "feature": "region_ring_inc_365d",
+          "importance": 0.0155
+        }
+      ]
+    },
+    "fail_in_365d": {
+      "train_rows": 389808,
+      "train_snapshots": 36,
+      "test_rows": 129936,
+      "test_positive_rate": 0.11828900381726389,
+      "model": {
+        "roc_auc": 0.7356169603595004,
+        "pr_auc": 0.3344710564661472,
+        "brier": 0.09280073481616415,
+        "precision_at_top5pct": 0.4652093596059113,
+        "recall_at_top5pct": 0.19661678594664933,
+        "precision_at_top10pct": 0.3772800738859386,
+        "recall_at_top10pct": 0.31893298633702016
+      },
+      "baseline_legacy_features": {
+        "roc_auc": 0.7255288476822565,
+        "pr_auc": 0.32233265786671544,
+        "brier": 0.09427328125894575,
+        "precision_at_top5pct": 0.45304802955665024,
+        "recall_at_top5pct": 0.19147690305790502,
+        "precision_at_top10pct": 0.36619718309859156,
+        "recall_at_top10pct": 0.3095640858815875
+      },
+      "baseline_own_history": {
+        "roc_auc": 0.6060323298570893,
+        "pr_auc": 0.22487216199231874,
+        "precision_at_top5pct": 0.3374384236453202,
+        "recall_at_top5pct": 0.14261548471047494,
+        "precision_at_top10pct": 0.2739167243900562,
+        "recall_at_top10pct": 0.23155497722836696
+      },
+      "top_features": [
+        {
+          "feature": "log_length",
+          "importance": 0.1183
+        },
+        {
+          "feature": "length_m",
+          "importance": 0.1161
+        },
+        {
+          "feature": "is_road",
+          "importance": 0.0737
+        },
+        {
+          "feature": "own_inc_total",
+          "importance": 0.0517
+        },
+        {
+          "feature": "own_inc_730d",
+          "importance": 0.0355
+        },
+        {
+          "feature": "lanes",
+          "importance": 0.0249
+        },
+        {
+          "feature": "sign_crossing",
+          "importance": 0.0241
+        },
+        {
+          "feature": "own_days_since_inc",
+          "importance": 0.0239
+        },
+        {
+          "feature": "region_inc_per_asset_365d",
+          "importance": 0.0218
+        },
+        {
+          "feature": "x_km",
+          "importance": 0.0216
+        },
+        {
+          "feature": "y_km",
+          "importance": 0.0207
+        },
+        {
+          "feature": "nbr_inc_500m_365d",
+          "importance": 0.0205
+        },
+        {
+          "feature": "dist_centre_km",
+          "importance": 0.02
+        },
+        {
+          "feature": "ft90_x_road",
+          "importance": 0.0179
+        },
+        {
+          "feature": "own_sev_mean_365d",
+          "importance": 0.0159
+        }
+      ]
+    }
+  }
+}

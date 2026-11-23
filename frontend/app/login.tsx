@@ -29,7 +29,7 @@ export default function Login() {
     if (idToken) {
       const payload = decodeJwtPayload(idToken);
       if (payload?.sub && payload?.email) {
-        try { await saveUser(payload.sub, payload.email); } catch {}
+        try { await saveUser(payload.sub, payload.email, payload.nickname ?? payload.name); } catch {}
       }
     }
     router.replace("/(tabs)");
@@ -235,7 +235,7 @@ function LoginForm({
 
       {/* Sign up */}
       <View style={s.footer}>
-        <Text style={s.footerText}>Don't have an account? </Text>
+        <Text style={s.footerText}>Don&apos;t have an account? </Text>
         <TouchableOpacity onPress={onSignUp} disabled={!!loading}>
           <Text style={s.footerLink}>Sign up</Text>
         </TouchableOpacity>
