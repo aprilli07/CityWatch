@@ -1,0 +1,5 @@
+# Extra dependencies for training and serving the CV model
+-r requirements.txt
+tensorflow==2.20.0
+matplotlib==3.11.2
+kaggle==2.2.5

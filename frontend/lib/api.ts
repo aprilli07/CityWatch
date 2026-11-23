@@ -1,115 +1,107 @@
-import { createClient } from '@supabase/supabase-js';
 import * as Location from 'expo-location';
+import { Platform } from 'react-native';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://172.20.10.13:3001';
+// The API is the only backend the app talks to: photo upload, classification,
+// weather and storage all happen server-side, so no database keys ship in the app.
+// - iOS simulator: http://localhost:8000
+// - Android emulator: http://10.0.2.2:8000
+// - Physical device: http://<your machine's LAN IP>:8000
+export const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ??
+  (Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000');
 
-const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
-);
-
-async function uploadPhotoToStorage(photoUri: string, userId: string): Promise<string> {
-  const safeUserId = userId.replace(/[|\\/:*?"<>]/g, '-');
-  const fileName = `${safeUserId}/${Date.now()}.jpg`;
-
-  // Fetch the local file URI as an ArrayBuffer (works on both iOS and Android)
-  const response = await fetch(photoUri);
-  const arrayBuffer = await response.arrayBuffer();
-
-  const { data, error } = await supabase.storage
-    .from('reports')
-    .upload(fileName, arrayBuffer, { contentType: 'image/jpeg', upsert: false });
-
-  if (error) throw new Error(`Image upload failed: ${error.message}`);
-
-  const { data: urlData } = supabase.storage.from('reports').getPublicUrl(data.path);
-  return urlData.publicUrl;
-}
-
-export async function submitPotholeReport(
-  photoUri: string,
-  location: Location.LocationObject,
-  photoTimestamp: number,   // ms since epoch — from EXIF DateTime or Date.now()
-  userId?: string,
-) {
-  const imageUrl = await uploadPhotoToStorage(photoUri, userId ?? 'anonymous');
-
-  const response = await fetch(`${API_BASE_URL}/api/reports`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      image_url: imageUrl,
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      photo_timestamp: new Date(photoTimestamp).toISOString(),
-      user_id: userId ?? null,
-    }),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`API error ${response.status}: ${text}`);
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, init);
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`API ${res.status} on ${path}: ${text.slice(0, 200)}`);
   }
-
-  return response.json();
+  return res.json() as Promise<T>;
 }
+
+// ─── Reports ────────────────────────────────────────────────────────────────
+
+export type ReportStatus = 'open' | 'in_progress' | 'resolved' | 'rejected';
 
 export type Report = {
   id: string;
   image_url: string | null;
   issue_type: string | null;
+  cv_confidence: number | null;
   severity: number | null;
-  status: string | null;
+  status: ReportStatus | null;
   created_at: string;
-  // loc is returned as GeoJSON from the backend
   latitude: number | null;
   longitude: number | null;
+  h3_cell: string | null;
 };
 
+export type SubmitReportResult = {
+  success: boolean;
+  report: Report;
+  incident_id: number | null;
+  classification: { prediction: string | null; confidence: number | null; top3: { label: string; p: number }[] };
+  severity_source: 'llm' | 'heuristic';
+};
+
+export async function submitPotholeReport(
+  photoUri: string,
+  location: Location.LocationObject,
+  photoTimestamp: number, // ms since epoch, from EXIF DateTime or Date.now()
+  userId?: string,
+): Promise<SubmitReportResult> {
+  const form = new FormData();
+  // React Native's FormData accepts { uri, name, type } file descriptors.
+  form.append('file', { uri: photoUri, name: 'report.jpg', type: 'image/jpeg' } as any);
+  form.append('latitude', String(location.coords.latitude));
+  form.append('longitude', String(location.coords.longitude));
+  form.append('photo_timestamp', new Date(photoTimestamp).toISOString());
+  if (userId) form.append('user_id', userId);
+  return request<SubmitReportResult>('/api/reports', { method: 'POST', body: form });
+}
+
 export async function getMyReports(userId: string): Promise<Report[]> {
-  const response = await fetch(`${API_BASE_URL}/api/reports?user_id=${encodeURIComponent(userId)}`);
-  if (!response.ok) throw new Error(`API error: ${response.status}`);
-  const json = await response.json();
+  const json = await request<{ data: Report[] }>(`/api/reports?user_id=${encodeURIComponent(userId)}`);
   return json.data;
 }
 
-export async function saveUser(id: string, email: string) {
-  const response = await fetch(`${API_BASE_URL}/api/users`, {
+// ─── Users ──────────────────────────────────────────────────────────────────
+
+export async function saveUser(id: string, email?: string, displayName?: string) {
+  return request('/api/users', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, email }),
+    body: JSON.stringify({ id, email, display_name: displayName }),
   });
-
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(`Failed to save user: ${message}`);
-  }
-
-  return response.json();
 }
+
+// ─── Stats ──────────────────────────────────────────────────────────────────
 
 export type StatsData = {
   active_count: number;
   resolved_this_week: number;
+  reported_this_week: number;
   total_count: number;
+  median_days_to_resolve: number | null;
   issue_type_counts: Record<string, number>;
 };
 
 export async function getStats(): Promise<StatsData> {
-  console.log('fetching stats data')
-  const response = await fetch(`${API_BASE_URL}/api/stats`);
-  if (!response.ok) throw new Error(`API error: ${response.status}`);
-  const json = await response.json();
-  return json.data;
+  return (await request<{ data: StatsData }>('/api/stats')).data;
 }
+
+// ─── Heatmap / regions ──────────────────────────────────────────────────────
 
 export type HeatmapPeriod = 'current' | '30d' | '90d' | '365d';
 
 export type HeatmapCell = {
+  h3_cell: string;
   latitude: number;
   longitude: number;
-  issue_count: number;
-  value: number;         // the selected period's risk value
+  asset_count: number;
+  issue_count: number;   // open reports in the region
+  value: number;         // 0-1 intensity for the selected period
+  risk: number;          // raw value (severity, or failure probability)
   avg_severity: number;
   predict_30d: number;
   predict_90d: number;
@@ -117,66 +109,25 @@ export type HeatmapCell = {
 };
 
 export async function getHeatmap(period: HeatmapPeriod = 'current'): Promise<HeatmapCell[]> {
-  // Map period to column name in the table
-  const PERIOD_COLUMN: Record<HeatmapPeriod, string> = {
-    current: 'avg_severity',
-    '30d': 'predict_30d',
-    '90d': 'predict_90d',
-    '365d': 'predict_365d',
-  };
+  return (await request<{ data: HeatmapCell[] }>(`/api/heatmap?period=${period}`)).data;
+}
 
-  const valueCol = PERIOD_COLUMN[period] ?? 'avg_severity';
+export async function getRegionsGeoJSON(
+  horizon: Exclude<HeatmapPeriod, 'current'>,
+): Promise<GeoJSON.FeatureCollection> {
+  return request<GeoJSON.FeatureCollection>(`/api/regions?horizon=${horizon}`);
+}
 
-  const { data, error } = await supabase
-    .from('heatmap_tiles')
-    .select('grid_cell, issue_count, avg_severity, predict_30d, predict_90d, predict_365d')
-    .order(valueCol, { ascending: false });
+// ─── Leaderboard ────────────────────────────────────────────────────────────
 
-  if (error) {
-    console.error(error);
-    return [];
-  }
+export type LeaderboardEntry = {
+  id: string;
+  name: string;
+  report_count: number;
+  resolved_count: number;
+  rank: number;
+};
 
-  // Normalize rows to HeatmapCell shape expected by the app
-  return (data ?? [])
-    .map((row: any) => {
-      const gc = row.grid_cell;
-      let longitude: number | null = null;
-      let latitude: number | null = null;
-
-      // grid_cell can be GeoJSON-like object or a JSON string — handle both
-      try {
-        if (gc && typeof gc === 'object') {
-          if (Array.isArray(gc.coordinates)) {
-            [longitude, latitude] = gc.coordinates;
-          } else if (gc.type === 'Point' && Array.isArray(gc.coordinates)) {
-            [longitude, latitude] = gc.coordinates;
-          }
-        } else if (gc && typeof gc === 'string') {
-          const parsed = JSON.parse(gc);
-          if (parsed && Array.isArray(parsed.coordinates)) {
-            [longitude, latitude] = parsed.coordinates;
-          }
-        }
-      } catch (e) {
-        // ignore and skip this row below
-      }
-
-      if (longitude == null || latitude == null) return null;
-
-      const avg = row.avg_severity ?? 0;
-      const v = row[valueCol] ?? avg ?? 0;
-
-      return {
-        latitude,
-        longitude,
-        issue_count: row.issue_count ?? 0,
-        value: v,
-        avg_severity: avg,
-        predict_30d: row.predict_30d ?? 0,
-        predict_90d: row.predict_90d ?? 0,
-        predict_365d: row.predict_365d ?? 0,
-      } as HeatmapCell;
-    })
-    .filter(Boolean) as HeatmapCell[];
+export async function getLeaderboard(window: 'all' | '30d' | '365d' = 'all', limit = 20) {
+  return (await request<{ data: LeaderboardEntry[] }>(`/api/leaderboard?window=${window}&limit=${limit}`)).data;
 }

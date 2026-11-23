@@ -58,6 +58,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="leaderboard"
+        options={{
+          title: 'Leaders',
+          tabBarIcon: ({ color }) =>
+            Platform.OS === 'ios' ? (
+              <SymbolView name="trophy.fill" tintColor={color} resizeMode="scaleAspectFit" style={{ width: 28, height: 28 }} />
+            ) : (
+              <Text style={{ fontSize: 20, color }}>🏆</Text>
+            ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',

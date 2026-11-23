@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "pothole-app",
+    "name": "CityWatch",
     "slug": "pothole-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -32,21 +32,19 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Allow Pothole Reporter to access your camera.",
-          "photosPermission": "Allow Pothole Reporter to access your photos."
+          "cameraPermission": "Allow CityWatch to access your camera.",
+          "photosPermission": "Allow CityWatch to access your photos."
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow Pothole Reporter to access your location."
+          "locationWhenInUsePermission": "Allow CityWatch to access your location."
         }
       ],
       [
         "@rnmapbox/maps",
-        {
-          "RNMapboxMapsDownloadToken": "sk.eyJ1IjoiaXNoeWZpc2giLCJhIjoiY21tZnlrZmNzMGVnODJvb2pyZXY0NTd0NyJ9.aH70g0X1hUcCaflBPqKQOg"
-        }
+        {}
       ],
       [
         "expo-splash-screen",
@@ -61,11 +59,11 @@
         }
       ],
       [
-        "react-native-auth0", 
+        "react-native-auth0",
         {
           "domain": "dev-mlcujpgo7055muc7.us.auth0.com"
         }
-      ]  
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

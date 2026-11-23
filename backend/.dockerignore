@@ -1,0 +1,7 @@
+.venv
+.env
+cache
+uploads
+ml/data
+__pycache__
+.pytest_cache
