@@ -147,7 +147,7 @@ docs/PRODUCT.md   problem, users, scope, metrics, decisions, roadmap
 ## Tests
 
 ```bash
-make test     # 25 tests: features (incl. leakage), services, API against PostGIS
+make test     # 26 tests: features (incl. leakage), services, API against PostGIS
 make lint     # ruff + tsc + expo lint
 ```
 

@@ -105,3 +105,15 @@ def test_flipped_copy_is_duplicate():
     mirrored = np.ascontiguousarray(img[:, ::-1])
     assert not is_near_duplicate(average_hash(mirrored), kept)  # plain hash misses it
     assert any(is_near_duplicate(v, kept) for v in variant_hashes(mirrored))
+
+
+def test_classifier_disabled_without_tensorflow(monkeypatch):
+    """Model file present but TensorFlow missing (CI / lean install) must degrade, not crash."""
+    import sys
+
+    from app.services.classifier import Classifier
+
+    monkeypatch.setitem(sys.modules, "tensorflow", None)  # makes `import tensorflow` raise ImportError
+    clf = Classifier()
+    assert clf.available is False
+    assert clf.predict(b"not an image") == {"prediction": None, "confidence": None, "top3": []}

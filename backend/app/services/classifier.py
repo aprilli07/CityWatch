@@ -28,7 +28,11 @@ class Classifier:
             if not settings.cv_model_path.exists():
                 log.warning("CV model not found at %s; classification disabled", settings.cv_model_path)
                 return
-            import tensorflow as tf  # heavy import, deferred until first use
+            try:
+                import tensorflow as tf  # heavy import, deferred until first use
+            except ImportError:
+                log.warning("TensorFlow not installed (see requirements-ml.txt); classification disabled")
+                return
 
             self._model = tf.keras.models.load_model(settings.cv_model_path)
             self._labels = json.loads(settings.cv_labels_path.read_text())["classes"]
