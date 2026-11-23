@@ -6,6 +6,8 @@ and forecasts **where failures are likely next**, so crews can be sent there
 before things break. Built at HackCanada 2026, then rebuilt into a tested,
 reproducible system.
 
+**Devpost:** [devpost.com/software/crack-h7koe6](https://devpost.com/software/crack-h7koe6)
+
 <!-- METRICS:START -->
 | | Result | How it's measured |
 |---|---|---|
